@@ -1,2 +1,2 @@
-# subgraph-polygon-staking
-Subgraph for the staking contract deployed in Polygon Network
+# subgraph-kovan-staking
+Subgraph for the staking contract deployed in Kovan Test Network
