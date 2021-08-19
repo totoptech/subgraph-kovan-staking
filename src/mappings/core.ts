@@ -1,43 +1,90 @@
 import {
-  StakedCall
+  StakeCall,
   Withdrawn as WithdrawnEvent,
 } from "../../generated/templates/StakingRewards/StakingRewards";
 import { StakingRewardsData, User } from "../../generated/schema";
-import { createUser, STAKING_REWARDS_ADDRESS, ZERO_BI } from "./helpers";
+import {
+  createOrLoadUser,
+  STAKING_REWARDS_ADDRESS,
+  updateStakingRewardsDayData,
+  ZERO_BI,
+} from "./helpers";
+import { BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 
-export function handleStake(call: ): void {
+export function handleStake(call: StakeCall): void {
   let stakingRewards = StakingRewardsData.load(STAKING_REWARDS_ADDRESS);
 
-  let isNewUser = createUser(event.params.user);
+  if (stakingRewards === null) {
+    stakingRewards = new StakingRewardsData(STAKING_REWARDS_ADDRESS);
+    stakingRewards.totalStakingVolume = ZERO_BI;
+    stakingRewards.totalStakers = 0;
+    stakingRewards.stakers = [];
+  }
 
-  if (isNewUser) stakingRewards.totalStakers++;
+  let user = createOrLoadUser(call.from);
 
-  stakingRewards.totalStakingVolume.plus(event.params.amount);
+  if (user.lockedBalance.equals(ZERO_BI)) {
+    stakingRewards.totalStakers++;
+    stakingRewards.stakers = stakingRewards.stakers.concat([user.id]);
+  }
+
+  let amount = call.inputs.amount;
+
+  user.lockedBalance = user.lockedBalance.plus(amount);
+
+  user.save();
+
+  stakingRewards.totalStakingVolume = stakingRewards.totalStakingVolume.plus(
+    amount
+  );
 
   stakingRewards.save();
+
+  updateStakingRewardsDayData(
+    true,
+    call.block.timestamp,
+    amount,
+    stakingRewards.totalStakingVolume
+  );
 }
 
 export function handleWithdraw(event: WithdrawnEvent): void {
   let stakingRewards = StakingRewardsData.load(STAKING_REWARDS_ADDRESS);
 
-  stakingRewards.totalStakers--;
-
   let user = User.load(event.params.user.toHexString());
 
-  user.lockedBalance = ZERO_BI;
+  let amount = event.params.amount;
+
+  user.lockedBalance = user.lockedBalance.minus(amount);
 
   user.save();
 
-  stakingRewards.totalStakingVolume.minus(event.params.amount);
+  if (user.lockedBalance.equals(ZERO_BI)) {
+    let stakers = stakingRewards.stakers;
+    for (let i = 0; i < stakers.length; i++) {
+      if (stakers[i] == user.id) {
+        stakingRewards.stakers = stakers.splice(i, 1);
+        log.info("I am user2: {}", [user.id]);
+
+        break;
+      }
+    }
+
+    stakingRewards.totalStakers--;
+  }
+
+  stakingRewards.totalStakingVolume = stakingRewards.totalStakingVolume.minus(
+    amount
+  );
 
   stakingRewards.save();
+
+  updateStakingRewardsDayData(
+    false,
+    event.block.timestamp,
+    amount,
+    stakingRewards.totalStakingVolume
+  );
 }
 
-export function handleDeploy(): void {
-  let stakingRewards = StakingRewardsData.load(STAKING_REWARDS_ADDRESS);
-  if (stakingRewards === null) {
-    stakingRewards = new StakingRewardsData(STAKING_REWARDS_ADDRESS);
-    stakingRewards.totalStakingVolume = ZERO_BI;
-    stakingRewards.totalStakers = ZERO_BI;
-  }
-}
+export function handleBlock(block: ethereum.Block): void {}

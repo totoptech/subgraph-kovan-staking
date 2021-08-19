@@ -4,45 +4,47 @@ type StakingRewardsData @entity {
   "total staking volume and stakers"
   totalStakingVolume: BigInt!
   totalStakers: Int!
+  stakers: [String]!
 }
 
 type StakingRewardsDayData @entity {
   id: ID!
   date: Int!
-
+  dailyStakingVolume: BigInt!
   totalStakingVolume: BigInt!
 }
 
 type UserRewardsBlockData @entity {
-  "{user_id} + {timestamp}"
+  "{user_address}-{timestamp}"
   id: ID!
-  rewardsVolume: BigInt!
+  rewardsVolumePerBlock: BigInt!
+  totalRewardsVolume: BigInt!
   user: User!
   timestamp: Int!
   blockNumber: BigInt!
 }
 
-type UserRewardsDayData @entity {
-  "{user_id} + {timestamp}"
-  id: ID!
-  rewardsVolume: BigInt!
-  user: User!
-  date: Int!
-}
+# type UserRewardsDayData @entity {
+#   "{user_address}-{timestamp}"
+#   id: ID!
+#   rewardsVolume: BigInt!
+#   user: User!
+#   date: Int!
+# }
 
-type UserRewardsMonthData @entity {
-  "{user_id} + {timestamp}"
-  id: ID!
-  rewardsVolume: BigInt!
-  user: User!
-  date: Int!
-}
+# type UserRewardsMonthData @entity {
+#   "{user_address}-{timestamp}"
+#   id: ID!
+#   rewardsVolume: BigInt!
+#   user: User!
+#   date: Int!
+# }
 
 type User @entity {
   id: ID!
   lockedBalance: BigInt!
   earnedBalance: BigInt!
   userRewardsBlockDatas: [UserRewardsBlockData!]! @derivedFrom(field: "user")
-  userRewardsDayDatas: [UserRewardsDayData!]! @derivedFrom(field: "user")
-  userRewardsMonthDatas: [UserRewardsMonthData!]! @derivedFrom(field: "user")
+  #   userRewardsDayDatas: [UserRewardsDayData!]! @derivedFrom(field: "user")
+  #   userRewardsMonthDatas: [UserRewardsMonthData!]! @derivedFrom(field: "user")
 }

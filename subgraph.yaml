@@ -3,45 +3,23 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
-    name: StakingRewardsFactory
-    network: kovan
-    source:
-      address: "0x6500ef5759240e3fdf63ab472c95e3e2c80d8e47"
-      abi: StakingRewardsFactory
-      startBlock: 10000834
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.4
-      language: wasm/assemblyscript
-      entities:
-        - StakingFactoryDayData
-        - User
-      abis:
-        - name: StakingRewardsFactory
-          file: ./abis/StakingRewardsFactory.json
-      file: ./src/mappings/core.ts
-      callHandlers:
-        - function: deploy(address,uint256,uint256)
-          handler: handleDeploy
-templates:
-  - kind: ethereum/contract
     name: StakingRewards
     network: kovan
     source:
+      address: "0x48ce557a201222bba020afdc9e92b9af9872ed0a"
       abi: StakingRewards
+      startBlock: 26803516
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
-      file: ./src/mappings/core.ts
       entities:
-        - StakingFactoryDayData
-        - User
+        - StakingRewardsData
+        - StakingRewardsDayData
       abis:
-        - name: StakingRewardsFactory
-          file: ./abis/StakingRewardsFactory.json
         - name: StakingRewards
           file: ./abis/StakingRewards.json
+      file: ./src/mappings/core.ts
       callHandlers:
         - function: stake(uint256)
           handler: handleStake

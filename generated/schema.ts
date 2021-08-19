@@ -59,6 +59,15 @@ export class StakingRewardsData extends Entity {
   set totalStakers(value: i32) {
     this.set("totalStakers", Value.fromI32(value));
   }
+
+  get stakers(): Array<string | null> {
+    let value = this.get("stakers");
+    return value.toStringArray();
+  }
+
+  set stakers(value: Array<string | null>) {
+    this.set("stakers", Value.fromStringArray(value));
+  }
 }
 
 export class StakingRewardsDayData extends Entity {
@@ -106,6 +115,15 @@ export class StakingRewardsDayData extends Entity {
     this.set("date", Value.fromI32(value));
   }
 
+  get dailyStakingVolume(): BigInt {
+    let value = this.get("dailyStakingVolume");
+    return value.toBigInt();
+  }
+
+  set dailyStakingVolume(value: BigInt) {
+    this.set("dailyStakingVolume", Value.fromBigInt(value));
+  }
+
   get totalStakingVolume(): BigInt {
     let value = this.get("totalStakingVolume");
     return value.toBigInt();
@@ -149,13 +167,22 @@ export class UserRewardsBlockData extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get rewardsVolume(): BigInt {
-    let value = this.get("rewardsVolume");
+  get rewardsVolumePerBlock(): BigInt {
+    let value = this.get("rewardsVolumePerBlock");
     return value.toBigInt();
   }
 
-  set rewardsVolume(value: BigInt) {
-    this.set("rewardsVolume", Value.fromBigInt(value));
+  set rewardsVolumePerBlock(value: BigInt) {
+    this.set("rewardsVolumePerBlock", Value.fromBigInt(value));
+  }
+
+  get totalRewardsVolume(): BigInt {
+    let value = this.get("totalRewardsVolume");
+    return value.toBigInt();
+  }
+
+  set totalRewardsVolume(value: BigInt) {
+    this.set("totalRewardsVolume", Value.fromBigInt(value));
   }
 
   get user(): string {
@@ -183,125 +210,6 @@ export class UserRewardsBlockData extends Entity {
 
   set blockNumber(value: BigInt) {
     this.set("blockNumber", Value.fromBigInt(value));
-  }
-}
-
-export class UserRewardsDayData extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id !== null, "Cannot save UserRewardsDayData entity without an ID");
-    assert(
-      id.kind == ValueKind.STRING,
-      "Cannot save UserRewardsDayData entity with non-string ID. " +
-        'Considering using .toHex() to convert the "id" to a string.'
-    );
-    store.set("UserRewardsDayData", id.toString(), this);
-  }
-
-  static load(id: string): UserRewardsDayData | null {
-    return store.get("UserRewardsDayData", id) as UserRewardsDayData | null;
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get rewardsVolume(): BigInt {
-    let value = this.get("rewardsVolume");
-    return value.toBigInt();
-  }
-
-  set rewardsVolume(value: BigInt) {
-    this.set("rewardsVolume", Value.fromBigInt(value));
-  }
-
-  get user(): string {
-    let value = this.get("user");
-    return value.toString();
-  }
-
-  set user(value: string) {
-    this.set("user", Value.fromString(value));
-  }
-
-  get date(): i32 {
-    let value = this.get("date");
-    return value.toI32();
-  }
-
-  set date(value: i32) {
-    this.set("date", Value.fromI32(value));
-  }
-}
-
-export class UserRewardsMonthData extends Entity {
-  constructor(id: string) {
-    super();
-    this.set("id", Value.fromString(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(
-      id !== null,
-      "Cannot save UserRewardsMonthData entity without an ID"
-    );
-    assert(
-      id.kind == ValueKind.STRING,
-      "Cannot save UserRewardsMonthData entity with non-string ID. " +
-        'Considering using .toHex() to convert the "id" to a string.'
-    );
-    store.set("UserRewardsMonthData", id.toString(), this);
-  }
-
-  static load(id: string): UserRewardsMonthData | null {
-    return store.get("UserRewardsMonthData", id) as UserRewardsMonthData | null;
-  }
-
-  get id(): string {
-    let value = this.get("id");
-    return value.toString();
-  }
-
-  set id(value: string) {
-    this.set("id", Value.fromString(value));
-  }
-
-  get rewardsVolume(): BigInt {
-    let value = this.get("rewardsVolume");
-    return value.toBigInt();
-  }
-
-  set rewardsVolume(value: BigInt) {
-    this.set("rewardsVolume", Value.fromBigInt(value));
-  }
-
-  get user(): string {
-    let value = this.get("user");
-    return value.toString();
-  }
-
-  set user(value: string) {
-    this.set("user", Value.fromString(value));
-  }
-
-  get date(): i32 {
-    let value = this.get("date");
-    return value.toI32();
-  }
-
-  set date(value: i32) {
-    this.set("date", Value.fromI32(value));
   }
 }
 
@@ -360,23 +268,5 @@ export class User extends Entity {
 
   set userRewardsBlockDatas(value: Array<string>) {
     this.set("userRewardsBlockDatas", Value.fromStringArray(value));
-  }
-
-  get userRewardsDayDatas(): Array<string> {
-    let value = this.get("userRewardsDayDatas");
-    return value.toStringArray();
-  }
-
-  set userRewardsDayDatas(value: Array<string>) {
-    this.set("userRewardsDayDatas", Value.fromStringArray(value));
-  }
-
-  get userRewardsMonthDatas(): Array<string> {
-    let value = this.get("userRewardsMonthDatas");
-    return value.toStringArray();
-  }
-
-  set userRewardsMonthDatas(value: Array<string>) {
-    this.set("userRewardsMonthDatas", Value.fromStringArray(value));
   }
 }
