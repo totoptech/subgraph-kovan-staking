@@ -1,5 +1,10 @@
 import { Address, BigInt } from "@graphprotocol/graph-ts";
-import { StakingRewardsDayData, User } from "../../generated/schema";
+import {
+  StakingRewardsDayData,
+  User,
+  UserRewardsDayData,
+  UserRewardsMonthData,
+} from "../../generated/schema";
 
 export let ZERO_BI = BigInt.fromI32(0);
 export let STAKING_REWARDS_ADDRESS =
@@ -27,7 +32,8 @@ export function updateStakingRewardsDayData(
   let dayID = timestamp.toI32() / 86400;
   let dayStartTimestamp = dayID * 86400;
 
-  let rewardsDayID = STAKING_REWARDS_ADDRESS.concat("-").concat(
+  let rewardsDayID = generateID(
+    STAKING_REWARDS_ADDRESS,
     BigInt.fromI32(dayID).toString()
   );
 
@@ -52,4 +58,62 @@ export function updateStakingRewardsDayData(
   rewardsDayData.totalStakingVolume = totalStakingVolume;
 
   rewardsDayData.save();
+}
+
+export function updateUserStakingRewardsDayData(
+  user: string,
+  rewardsVolumePerBlock: BigInt,
+  timestamp: BigInt
+): void {
+  if (rewardsVolumePerBlock.equals(ZERO_BI)) return;
+
+  let dayID = timestamp.toI32() / 86400;
+  let dayStartTimestamp = dayID * 86400;
+
+  let currentDayDataID = generateID(user, BigInt.fromI32(dayID).toString());
+
+  let dayData = UserRewardsDayData.load(currentDayDataID);
+
+  if (dayData === null) {
+    dayData = new UserRewardsDayData(currentDayDataID);
+    dayData.date = dayStartTimestamp;
+    dayData.dailyRewardsVolume = ZERO_BI;
+    dayData.user = user;
+  }
+  dayData.dailyRewardsVolume = dayData.dailyRewardsVolume.plus(
+    rewardsVolumePerBlock
+  );
+
+  dayData.save();
+}
+
+export function updateUserStakingRewardsMonthData(
+  user: string,
+  rewardsVolumePerBlock: BigInt,
+  timestamp: BigInt
+): void {
+  if (rewardsVolumePerBlock.equals(ZERO_BI)) return;
+
+  let monthID = timestamp.toI32() / 2592000;
+  let monthStartTimestamp = monthID * 2592000;
+
+  let currentMonthDataID = generateID(user, BigInt.fromI32(monthID).toString());
+
+  let monthData = UserRewardsMonthData.load(currentMonthDataID);
+
+  if (monthData === null) {
+    monthData = new UserRewardsMonthData(currentMonthDataID);
+    monthData.date = monthStartTimestamp;
+    monthData.monthlyRewardsVolume = ZERO_BI;
+    monthData.user = user;
+  }
+  monthData.monthlyRewardsVolume = monthData.monthlyRewardsVolume.plus(
+    rewardsVolumePerBlock
+  );
+
+  monthData.save();
+}
+
+export function generateID(name1: string, name2: string): string {
+  return name1.concat("-").concat(name2);
 }
