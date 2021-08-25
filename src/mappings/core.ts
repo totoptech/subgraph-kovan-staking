@@ -13,6 +13,7 @@ import {
   createOrLoadUser,
   generateID,
   STAKING_REWARDS_ADDRESS,
+  START_BLOCK,
   updateStakingRewardsDayData,
   updateUserStakingRewardsDayData,
   updateUserStakingRewardsMonthData,
@@ -124,6 +125,11 @@ export function handleWithdraw(event: WithdrawnEvent): void {
 }
 
 export function handleBlock(block: ethereum.Block): void {
+  if (block.number.equals(START_BLOCK)) {
+    // Create a new one for starting.
+    updateStakingRewardsDayData(true, block.timestamp, ZERO_BI, ZERO_BI);
+  }
+
   let stakingRewardsContract = StakingRewardsContract.bind(
     Address.fromString(STAKING_REWARDS_ADDRESS)
   );

@@ -9,6 +9,7 @@ import {
 export let ZERO_BI = BigInt.fromI32(0);
 export let STAKING_REWARDS_ADDRESS =
   "0x48ce557a201222bba020afdc9e92b9af9872ed0a";
+export let START_BLOCK = BigInt.fromI32(26803516);
 
 export function createOrLoadUser(address: Address): User {
   let user = User.load(address.toHexString());

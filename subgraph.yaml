@@ -26,5 +26,5 @@ dataSources:
       eventHandlers:
         - event: Withdrawn(indexed address,uint256)
           handler: handleWithdraw
-      # blockHandlers:
-      #   - handler: handleBlock
+      blockHandlers:
+        - handler: handleBlock
