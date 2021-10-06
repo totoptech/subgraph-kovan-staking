@@ -1,6 +1,7 @@
 import {
   StakeCall,
   Withdrawn as WithdrawnEvent,
+  Staked as StakedEvent,
   StakingRewards as StakingRewardsContract,
 } from "../../generated/templates/StakingRewards/StakingRewards";
 import {
@@ -21,7 +22,7 @@ import {
 } from "./helpers";
 import { Address, BigInt, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 
-export function handleStake(call: StakeCall): void {
+export function handleStake(event: StakedEvent): void {
   let stakingRewards = StakingRewardsData.load(STAKING_REWARDS_ADDRESS);
 
   if (stakingRewards === null) {
@@ -30,35 +31,38 @@ export function handleStake(call: StakeCall): void {
     stakingRewards.stakers = [];
     stakingRewards.totalStakersCount = 0;
   }
+  let userAddress = event.params.user.toHexString();
+  let amount = event.params.amount;
+  let timestamp = event.block.timestamp;
 
-  let user = createOrLoadUser(call.from);
+  //   let stakingRewardsContract = StakingRewardsContract.bind(
+  //     Address.fromString(STAKING_REWARDS_ADDRESS)
+  //   );
+
+  stakingRewards.totalStakingVolume = stakingRewards.totalStakingVolume.plus(
+    amount
+  );
+
+  let user = createOrLoadUser(userAddress);
 
   if (user.lockedBalance.equals(ZERO_BI)) {
     stakingRewards.stakers = stakingRewards.stakers.concat([user.id]);
     stakingRewards.totalStakersCount++;
   }
 
-  let amount = call.inputs.amount;
+  stakingRewards.save();
 
   user.lockedBalance = user.lockedBalance.plus(amount);
 
   user.save();
 
-  stakingRewards.totalStakingVolume = stakingRewards.totalStakingVolume.plus(
-    amount
-  );
-
-  stakingRewards.save();
-
-  let timestamp = call.block.timestamp;
-
   // Save UserTransaction
 
   let userTransaction = new UserTransaction(
-    generateID(call.from.toHexString(), timestamp.toString())
+    generateID(userAddress, timestamp.toString())
   );
 
-  userTransaction.user = call.from.toHexString();
+  userTransaction.user = userAddress;
   userTransaction.amount = amount;
   userTransaction.timestamp = timestamp;
   userTransaction.save();
@@ -133,6 +137,7 @@ export function handleBlock(block: ethereum.Block): void {
   let stakingRewardsContract = StakingRewardsContract.bind(
     Address.fromString(STAKING_REWARDS_ADDRESS)
   );
+
   let blockNumber = block.number;
 
   let stakingRewards = StakingRewardsData.load(STAKING_REWARDS_ADDRESS);

@@ -8,14 +8,14 @@ import {
 
 export let ZERO_BI = BigInt.fromI32(0);
 export let STAKING_REWARDS_ADDRESS =
-  "0x48ce557a201222bba020afdc9e92b9af9872ed0a";
-export let START_BLOCK = BigInt.fromI32(26803516);
+  "0x2a16bBD6f197BF245EbB23EC4664c8A354Ff5f1F";
+export let START_BLOCK = BigInt.fromI32(13309255);
 
-export function createOrLoadUser(address: Address): User {
-  let user = User.load(address.toHexString());
+export function createOrLoadUser(userAddress: string): User {
+  let user = User.load(userAddress);
 
   if (user === null) {
-    user = new User(address.toHexString());
+    user = new User(userAddress);
     user.lockedBalance = ZERO_BI;
     user.earnedBalance = ZERO_BI;
     user.save();
@@ -44,7 +44,6 @@ export function updateStakingRewardsDayData(
     rewardsDayData = new StakingRewardsDayData(rewardsDayID);
     rewardsDayData.date = dayStartTimestamp;
     rewardsDayData.dailyStakingVolume = ZERO_BI;
-    rewardsDayData.totalStakingVolume = ZERO_BI;
   }
 
   if (isStaking)
